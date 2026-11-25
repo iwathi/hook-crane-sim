@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { Sim, STEP, HOME, type Mode, type Input, type ResultKind } from './sim';
 import { FIELDS, PRESETS, BASE, randomConfig, type MachineConfig } from './config';
+import { initAdvisor } from './advisor';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -778,6 +779,7 @@ async function main() {
   }
 
   // ---------- 初期化 ----------
+  initAdvisor($('advisorModal'), $('advisorBtn'));
   renderSaved();
   renderStats();
   renderCounter();
