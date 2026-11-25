@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#11131f" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>フック引っ掛けクレーン練習シミュレーター</title>
-  <script type="module" crossorigin src="./assets/index-CyDO8kIy.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DJKGP9iV.css">
+  <script type="module" crossorigin src="./assets/index-DLO2hhdA.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BKXjRZDH.css">
 </head>
 <body>
   <div id="app">
@@ -15,8 +15,9 @@
       <select id="preset" aria-label="プリセット"></select>
       <button id="modeBtn">実機</button>
       <button id="demoBtn">デモ</button>
+      <button id="advisorBtn" class="adv-btn">攻略</button>
       <button id="camBtn">正面</button>
-      <button id="peekLockBtn" title="覗き込み視点を固定">覗き固定</button>
+      <button id="peekLockBtn" title="覗き込み視点を固定">覗き</button>
       <button id="slowBtn">1x</button>
       <button id="guideBtn">ガイド</button>
       <button id="menuBtn" aria-label="設定">⚙</button>
@@ -67,6 +68,7 @@
       <div id="stats"></div>
       <div class="row"><button id="clearStats">統計リセット</button></div>
     </aside>
+    <section id="advisorModal" aria-label="現場攻略チェックリスト"></section>
   </div>
 </body>
 </html>
