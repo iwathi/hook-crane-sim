@@ -26,7 +26,7 @@ const ACCEL = { slow: 5, normal: 7, fast: 9 };
 // 実機挙動: 急停止しても揺れは小さく、すぐに収まる
 const BRAKE = { hard: 18, soft: 3.5 };
 const RING_MASS = { light: 1.8, normal: 3.8, heavy: 6.5 };
-const RING_DAMP = { light: 0.25, normal: 0.65, heavy: 1.2 };
+const RING_DAMP = { light: 0.22, normal: 0.45, heavy: 0.75 };
 
 const ROPE_SPEC = {
   chain: { n: 12, r: 0.022, mass: 0.22, angDamp: 0.6, linDamp: 0.12, twist: 1.25, rest: 0.02, color: 0xe2e6ee },
@@ -435,26 +435,38 @@ export class Sim {
 
     const groups = ig(G_PRIZE, 0xffff);
     const bc = v3(offX, 0, 0);
+    const isSlide = c.hook === 'slideLeft';
 
-    // 木製ブロックコライダー
+    // 土台板コライダー（動画再現のアクリル板は超低摩擦0.06で金属リングがツルッと滑る）
     this.world.createCollider(
       RAPIER.ColliderDesc.cuboid(half.x, half.y, half.z)
         .setTranslation(bc.x, bc.y, bc.z)
         .setMass(isPlate ? 0.85 : 2.8)
-        .setFriction(0.55)
+        .setFriction(isSlide ? 0.06 : 0.20)
         .setRestitution(0.02)
         .setCollisionGroups(groups),
       body,
     );
 
-    // 木製ブロックのメッシュ表示（ナチュラル木目）
+    // 土台板のメッシュ表示（slideLeft時は動画どおりのクリアアクリル板、通常は木目板）
     if (isPlate) {
-      const woodMat = new THREE.MeshStandardMaterial({
-        map: createWoodTexture(),
-        roughness: 0.65,
-        metalness: 0.04,
-      });
-      this.addMesh(obj, new THREE.BoxGeometry(half.x * 2, half.y * 2, half.z * 2), woodMat, bc);
+      if (isSlide) {
+        const acrylicMat = new THREE.MeshStandardMaterial({
+          color: 0xf4f8ff,
+          transparent: true,
+          opacity: 0.72,
+          roughness: 0.12,
+          metalness: 0.08,
+        });
+        this.addMesh(obj, new THREE.BoxGeometry(half.x * 2, half.y * 2, half.z * 2), acrylicMat, bc);
+      } else {
+        const woodMat = new THREE.MeshStandardMaterial({
+          map: createWoodTexture(),
+          roughness: 0.65,
+          metalness: 0.04,
+        });
+        this.addMesh(obj, new THREE.BoxGeometry(half.x * 2, half.y * 2, half.z * 2), woodMat, bc);
+      }
     } else {
       this.addMesh(obj, new THREE.BoxGeometry(half.x * 2, half.y * 2, half.z * 2), MAT.basket, bc);
     }
@@ -800,12 +812,13 @@ export class Sim {
     this.root.add(robj);
     this.syncs.push({ body: ring, obj: robj });
 
+    const ringFriction = c.hook === 'slideLeft' ? 0.08 : 0.22;
     const m = ringMassVal / rsg.segs.length;
     for (const [a, b, r] of rsg.segs) {
       this.addCapsule(ring, robj, a, b, r, MAT.ring, {
         mass: m,
         groups: ig(G_RING, G_STATIC | G_PRIZE),
-        friction: 0.55,
+        friction: ringFriction,
         rest: rs.rest,
       });
     }
@@ -853,8 +866,8 @@ export class Sim {
   aimTargetWorld() {
     const tg = this.hookTargetWorld();
     if (this.cfg.hook === 'slideLeft') {
-      // 動画再現：リング右端をフックに合わせ、左奥へ滑り込ませるスイートスポット（実測100点領域の中心）
-      return v3(tg.x - 0.24, tg.y, tg.z + 0.06);
+      // 動画再現：リング右端をフックに合わせ、フック左奥(-3.2cm, -1.4cm)へ落として滑り込ませる
+      return v3(tg.x - 0.32, tg.y, tg.z - 0.14);
     }
     // 長距離奥移動後の慣性・回転を考慮したフック開口部のスイートスポット
     const offZ = -0.08;
@@ -1076,17 +1089,32 @@ export class Sim {
     if (this.pos.z < BOUNDS.minZ || this.pos.z > BOUNDS.maxZ) { this.pos.z = THREE.MathUtils.clamp(this.pos.z, BOUNDS.minZ, BOUNDS.maxZ); this.vel.z = 0; }
     this.head.setNextKinematicTranslation(this.pos);
 
-    // ねじれ癖:
-    // 1. 接地して紐が94%以下に弛んだとき: 摩擦を支点にクルッと回転してフックの懐へ潜り込む
+    // ねじれ癖＆接地時の滑り込み:
+    // 1. 接地して紐が94%以下に弛んだとき:
+    //    - ねじれあり: 回転トルクでクルッと回ってフックの懐へ潜り込む
+    //    - 動画再現(slideLeft): アクリル板上でリングが傾きながら右斜め手前（フック側）へスッと滑る
     // 2. プレイ開始・待機中（張力あり）: ごく微細な回転癖を与え、目視で回転方向を見極められるようにする
     this.ring.resetTorques(true);
+    this.ring.resetForces(true);
     const sign = this.twistSign;
     const ropeTwist = ROPE_SPEC[c.rope].twist;
+    const rpNow = this.ring.translation();
+    const distToHead = Math.hypot(rpNow.x - this.pos.x, rpNow.y + this.ringAttachY - this.pos.y, rpNow.z - this.pos.z);
+    const slack = distToHead < ROPE_LEN * 0.94;
+    const m = RING_MASS[c.ringMass];
+
+    if (slack && (this.phase === 'down' || this.phase === 'bottom')) {
+      // 接地後の自然な滑り（アクリル板の低摩擦＋傾きによる横滑り）
+      const slideForce = c.hook === 'slideLeft' ? 18.0 : 8.0;
+      const dirX = c.hook === 'slideLeft' ? 1.0 : (this.hookTargetWorld().x - rpNow.x >= 0 ? 0.6 : -0.6);
+      const dirZ = c.hook === 'slideLeft' ? 0.35 : 0;
+      const rv = this.ring.linvel();
+      if (Math.hypot(rv.x, rv.z) < 1.2) {
+        this.ring.addForce({ x: dirX * slideForce * m, y: 0, z: dirZ * slideForce * m }, true);
+      }
+    }
+
     if (sign && ropeTwist > 0) {
-      const rp = this.ring.translation();
-      const dist = Math.hypot(rp.x - this.pos.x, rp.y + this.ringAttachY - this.pos.y, rp.z - this.pos.z);
-      const slack = dist < ROPE_LEN * 0.94;
-      const m = RING_MASS[c.ringMass];
       const inertia = m * this.ringR * this.ringR;
       if (slack) {
         if (sign * this.ring.angvel().y < 3.4) {
