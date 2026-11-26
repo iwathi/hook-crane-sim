@@ -206,7 +206,7 @@ async function main() {
     sim.build(cfg, mode);
     trailPts.length = 0;
     hideAnswer();
-    localStorage.setItem('hcs-current-v4', JSON.stringify(cfg));
+    localStorage.setItem('hcs-current-v5', JSON.stringify(cfg));
     syncPanel();
   }
 
@@ -612,10 +612,10 @@ async function main() {
     }
 
     if (m === 'front') {
-      // 手前のペットボトル5本・連動トレイ・奥の木ブロック＆フック・クレーンヘッド全体を一望できる見下ろしアングル
-      const dist = Math.max(2.0 / tanH, 2.7 / tanV);
-      look.set(-0.05 + peekX * 0.22, 1.95, -0.35);
-      off.set(peekX, 2.25, dist);
+      // 左手前の待機クレーンヘッド(x=-2.25, z=1.15)〜右奥のフック(x=0.35, z=-2.05)まで全体が収まるアングル
+      const dist = Math.max(2.45 / tanH, 2.85 / tanV);
+      look.set(-0.2 + peekX * 0.22, 1.9, -0.45);
+      off.set(peekX, 2.35, dist);
     } else if (m === 'side') {
       const dist = Math.max(2.0 / tanH, 2.5 / tanV);
       look.set(cfg.prizeX, 1.7, -0.5);
@@ -785,7 +785,7 @@ async function main() {
   renderCounter();
   applyMode();
   const firstPreset = location.hash.startsWith('#c=') ? -1 : 0;
-  if (firstPreset === 0 && !localStorage.getItem('hcs-current-v4')) {
+  if (firstPreset === 0 && !localStorage.getItem('hcs-current-v5')) {
     presetName = PRESETS[0].name;
     presetSel.value = '0';
     cfg = PRESETS[0].make();
@@ -828,7 +828,7 @@ async function main() {
 function loadInitialConfig(): MachineConfig {
   try {
     if (location.hash.startsWith('#c=')) return { ...BASE, ...JSON.parse(decodeURIComponent(atob(location.hash.slice(3)))) };
-    const c = localStorage.getItem('hcs-current-v4');
+    const c = localStorage.getItem('hcs-current-v5');
     if (c) return { ...BASE, ...JSON.parse(c) };
   } catch { /* デフォルトにフォールバック */ }
   return { ...BASE };

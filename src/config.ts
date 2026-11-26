@@ -39,8 +39,8 @@ export const FIELDS: Field[] = [
   { key: 'slope', label: '傾斜プレート', type: 'select', options: [['none', '平置き（実機）'], ['left', '左へ傾斜'], ['right', '右へ傾斜'], ['toward', '手前へ傾斜']] },
   { key: 'prize', label: '景品タイプ', type: 'select', options: [['plate', '連動トレイ＋飲料5本（実機）'], ['basket', '重量カゴ']] },
   { key: 'com', label: '重心偏り', type: 'select', options: [['none', '均等（実機）'], ['left', '左寄り'], ['right', '右寄り']] },
-  { key: 'prizeX', label: 'フック台位置 X', type: 'range', min: -1.0, max: 1.4, step: 0.05 },
-  { key: 'prizeZ', label: 'フック台位置 Z', type: 'range', min: -2.4, max: -1.4, step: 0.05 },
+  { key: 'prizeX', label: 'フック台位置 X', type: 'range', min: -0.6, max: 1.4, step: 0.05 },
+  { key: 'prizeZ', label: 'フック台位置 Z', type: 'range', min: -2.8, max: -1.6, step: 0.05 },
 ];
 
 /** 実機（フック付き土台板引き上げ → 連動ワイヤーネット傾き → 手前の飲料5本落下）のデフォルト設定 */
@@ -59,8 +59,8 @@ export const BASE: MachineConfig = {
   slope: 'none',
   prize: 'plate',
   com: 'none',
-  prizeX: 0.0,
-  prizeZ: -1.75,
+  prizeX: 0.35,
+  prizeZ: -2.05,
 };
 
 const pick = <T>(a: T[]): T => a[Math.floor(Math.random() * a.length)];

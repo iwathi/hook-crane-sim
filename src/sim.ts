@@ -9,8 +9,8 @@ import { createWoodTexture, createCushionTexture } from './assets';
  */
 export const STEP = 1 / 240; // 240Hz 高精度ステップ
 const G = -98;
-const BOUNDS = { minX: -2.4, maxX: 2.4, minZ: -2.8, maxZ: 1.4 };
-export const HOME = { x: -1.45, z: -0.25 }; // 待機位置（木ブロックの左手前）
+const BOUNDS = { minX: -2.6, maxX: 2.6, minZ: -3.6, maxZ: 1.6 };
+export const HOME = { x: -2.25, z: 1.15 }; // 待機位置（左手前上空・実機同等の移動距離を確保）
 const TOP_Y = 5.4;
 const ROPE_LEN = 2.0;
 const DESCEND = 1.5;
@@ -228,8 +228,8 @@ export class Sim {
   private buildStatic() {
     const c = this.cfg;
 
-    // 1. 奥の上段棚（白い棚板: フック付き木ブロックが載る）
-    this.fixedBox(v3(0, SHELF_TOP - 0.06, -2.35), v3(3.1, 0.06, 1.2), MAT.shelfWhite, undefined, 0.55);
+    // 1. 奥の上段棚（白い棚板: フック付き土台板が載る・奥行き広め）
+    this.fixedBox(v3(0, SHELF_TOP - 0.06, -2.55), v3(3.1, 0.06, 1.4), MAT.shelfWhite, undefined, 0.55);
     // 棚前端のピンクストライプ装飾（実機写真風）
     this.addMesh(this.root, new THREE.BoxGeometry(6.2, 0.008, 0.16), MAT.shelfPink, v3(0, SHELF_TOP + 0.004, -1.24));
 
@@ -845,8 +845,8 @@ export class Sim {
   /** フック開口部へ潜り込むための理想の狙い位置（チュートリアル・デモ・採点共通） */
   aimTargetWorld() {
     const tg = this.hookTargetWorld();
-    // メインフックの開口部（+X側）のスイートスポット
-    const offZ = this.twistSign < 0 ? 0.04 : this.twistSign > 0 ? -0.04 : 0.04;
+    // 長距離奥移動後の慣性・回転を考慮したフック開口部のスイートスポット
+    const offZ = -0.08;
     return v3(tg.x + 0.18, tg.y, tg.z + offZ);
   }
 
