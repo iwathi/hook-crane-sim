@@ -371,6 +371,13 @@ export class Sim {
       ], 0, 0.48);
     }
 
+    // 1b. 動画再現：中央1本・左開口「？」型フック（リング右端を合わせて左奥に落とす滑り込み用）
+    if (c.hook === 'slideLeft') {
+      return collect([
+        this.generateSmoothHook(v3(0, 0, 0), Math.PI, baseR * 1.05, openDeg, wireR),
+      ], 0, 0.50);
+    }
+
     // 2. 単体・？型フック
     if (c.hook === 'pinUp') {
       return collect([this.generateSmoothHook(v3(0, 0, 0), 0, baseR * 1.12, openDeg, wireR)], 0, 0.50);
@@ -845,6 +852,10 @@ export class Sim {
   /** フック開口部へ潜り込むための理想の狙い位置（チュートリアル・デモ・採点共通） */
   aimTargetWorld() {
     const tg = this.hookTargetWorld();
+    if (this.cfg.hook === 'slideLeft') {
+      // 動画再現：リング右端をフックに合わせ、左奥へ滑り込ませるスイートスポット（実測100点領域の中心）
+      return v3(tg.x - 0.24, tg.y, tg.z + 0.06);
+    }
     // 長距離奥移動後の慣性・回転を考慮したフック開口部のスイートスポット
     const offZ = -0.08;
     return v3(tg.x + 0.18, tg.y, tg.z + offZ);

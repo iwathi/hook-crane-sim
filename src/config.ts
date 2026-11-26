@@ -7,7 +7,7 @@ export interface MachineConfig {
   ringMass: 'light' | 'normal' | 'heavy';
   ringShape: 'circleL' | 'circleM' | 'circleS' | 'dring' | 'thick';
   depth: 'shallow' | 'normal' | 'deep';
-  hook: 'pin3Up' | 'j' | 'pinUp' | 'pinDiag' | 'multi';
+  hook: 'pin3Up' | 'slideLeft' | 'j' | 'pinUp' | 'pinDiag' | 'multi';
   hookDepth: 'deep' | 'normal' | 'shallow';
   nut: 'none' | 'small' | 'large';
   guard: 'none' | 'side';
@@ -32,7 +32,7 @@ export const FIELDS: Field[] = [
   { key: 'ringMass', label: 'リング質量', type: 'select', options: [['heavy', '重量級（実機トーラス）'], ['normal', '標準'], ['light', '軽量']] },
   { key: 'ringShape', label: 'リング形状', type: 'select', options: [['thick', '太めリング（実機 約5.7cm）'], ['circleM', '真円・中'], ['circleL', '真円・大'], ['circleS', '真円・小'], ['dring', 'Dカン']] },
   { key: 'depth', label: '下降限界', type: 'select', options: [['deep', '深め（しっかり接地・倒れ込み）'], ['normal', '標準'], ['shallow', '浅め']] },
-  { key: 'hook', label: 'フック形状', type: 'select', options: [['pin3Up', '実機2連・？型フック（木ブロック）'], ['pinUp', '単体・？型フック'], ['j', 'ワイド・？型フック（深掛け）'], ['pinDiag', '斜め向き・？型フック'], ['multi', '3連三角・？型フック']] },
+  { key: 'hook', label: 'フック形状', type: 'select', options: [['pin3Up', '実機2連・？型フック（木ブロック）'], ['slideLeft', '動画再現：中央1本・左開口？フック'], ['pinUp', '単体・右開口？フック'], ['j', 'ワイド・？型フック（深掛け）'], ['pinDiag', '斜め向き・？型フック'], ['multi', '3連三角・？型フック']] },
   { key: 'hookDepth', label: 'フック深さ', type: 'select', options: [['normal', '標準（実機フック）'], ['deep', '深め（抜けにくい）'], ['shallow', '浅め（抜けやすい）']] },
   { key: 'nut', label: '固定ナット', type: 'select', options: [['none', 'なし（実機フラット座金）'], ['small', '小'], ['large', '大']] },
   { key: 'guard', label: 'ガード板', type: 'select', options: [['none', 'なし（実機）'], ['side', '左右にシールド']] },
@@ -83,7 +83,26 @@ export const PRESETS: { name: string; desc: string; make: () => MachineConfig }[
     make: () => ({ ...BASE }),
   },
   {
-    name: '2. ねじれランダム（回転見極め実戦）',
+    name: '2. 動画再現：左奥落とし・滑り込み練習',
+    desc: 'リング右端をフックに合わせ、フック左奥に落としてリング右縁（肩）を左開口「？」フックに滑り込ませる練習！',
+    make: () => ({
+      ...BASE,
+      speed: 'normal',
+      brake: 'soft',
+      rope: 'chain',
+      twist: 'none',
+      ringMass: 'heavy',
+      ringShape: 'circleL',
+      depth: 'deep',
+      hook: 'slideLeft',
+      hookDepth: 'normal',
+      nut: 'none',
+      prizeX: 0.2,
+      prizeZ: -1.95,
+    }),
+  },
+  {
+    name: '3. ねじれランダム（回転見極め実戦）',
     desc: '毎回チェーンのねじれ方向がランダムに変化。開始時のわずかな回転癖を観察して狙い位置を判断！',
     make: () => ({ ...BASE, twist: 'random' }),
   },

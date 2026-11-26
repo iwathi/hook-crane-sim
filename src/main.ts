@@ -679,12 +679,13 @@ async function main() {
     setLine(routeXLine, new THREE.Vector3(HOME.x, ringY, HOME.z), new THREE.Vector3(aim.x, ringY, HOME.z));
     // ② 奥移動ルート（ブルー）
     setLine(routeZLine, new THREE.Vector3(aim.x, ringY, HOME.z), new THREE.Vector3(aim.x, ringY, aim.z));
-    // ③ 降下ルート（ゴールド点線）
+    // ③ 降下ルート（動画再現モードでは「リング右端とフックを合わせる」縦ラインも分かりやすく表示）
     setLine(routeDownLine, new THREE.Vector3(aim.x, ringY, aim.z), new THREE.Vector3(aim.x, plateY, aim.z));
     routeDownLine.computeLineDistances();
 
-    // 着地狙いリングマーカー
+    // 着地狙いリングマーカー（動画の「フック左奥」赤丸イメージ）
     routeLandRing.position.set(aim.x, plateY + 0.015, aim.z);
+    (routeLandRing.material as THREE.MeshBasicMaterial).color.setHex(cfg.hook === 'slideLeft' ? 0xff1744 : 0xffab00);
 
     // フック開口部への潜り込み矢印（ピンク）
     setLine(routeHookLine, new THREE.Vector3(aim.x, aim.y, aim.z), hook);
@@ -716,22 +717,27 @@ async function main() {
     } else if (mode === 'tutorial') {
       const aim = sim.aimTargetWorld();
       const rp = sim.ringPos();
+      const isSlide = cfg.hook === 'slideLeft';
       if (sim.phase === 'idle') {
-        text = '【チュートリアル】水色ラインに沿って①を長押し！';
+        text = isSlide
+          ? '【左奥落とし】リング右端をフックに合わせる位置まで①長押し！'
+          : '【チュートリアル】水色ラインに沿って①を長押し！';
       } else if (sim.phase === 'moveX') {
         const dx = aim.x - rp.x;
         if (Math.abs(dx) < 0.14) {
-          text = '★ いま①を離す！（ベストタイミング）';
+          text = isSlide ? '★ リング横とフックが一致！いま①を離す！' : '★ いま①を離す！（ベストタイミング）';
           highlight = true;
         } else {
           text = dx > 0 ? `①長押し中… あと右へ ${(dx * 10).toFixed(1)}cm` : '通り過ぎ！すぐ①を離そう';
         }
       } else if (sim.phase === 'waitZ') {
-        text = '【チュートリアル】青いラインに沿って②を長押し！';
+        text = isSlide
+          ? '【左奥落とし】フック左奥の赤丸めがけて②を長押し！'
+          : '【チュートリアル】青いラインに沿って②を長押し！';
       } else if (sim.phase === 'moveZ') {
         const dz = rp.z - aim.z;
         if (Math.abs(dz) < 0.14) {
-          text = '★ いま②を離す！（ここで降下！）';
+          text = isSlide ? '★ フック左奥に到達！いま②を離す！' : '★ いま②を離す！（ここで降下！）';
           highlight = true;
         } else {
           text = dz > 0 ? `②長押し中… あと奥へ ${(dz * 10).toFixed(1)}cm` : '通り過ぎ！すぐ②を離そう';
